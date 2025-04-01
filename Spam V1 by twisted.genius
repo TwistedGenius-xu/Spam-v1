@@ -33,7 +33,7 @@ button.MouseButton1Click:Connect(function()
         -- Start skill spam loop
         spawn(function()
             while enabled do
-                -- Press skill 1 key (Z)
+                -- Press skill 1 key (C)
                 game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Z, false, game)
                 wait(0.05)
                 game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Z, false, game)
