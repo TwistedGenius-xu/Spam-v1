@@ -1,0 +1,48 @@
+-- Simple Blue Lock Rivals Mobile Skill 1 Spam Script
+local player = game:GetService("Players").LocalPlayer
+local enabled = false
+
+-- Create a simple button
+local gui = Instance.new("ScreenGui")
+gui.Name = "SkillSpamGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player.PlayerGui
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 120, 0, 50)
+button.Position = UDim2.new(0.1, 0, 0.8, 0)
+button.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+button.Text = "SKILL 1: OFF"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 18
+button.BorderSizePixel = 2
+button.Parent = gui
+button.Draggable = true
+button.Active = true
+
+-- Toggle function
+button.MouseButton1Click:Connect(function()
+    enabled = not enabled
+    
+    if enabled then
+        -- Change appearance when ON
+        button.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+        button.Text = "SKILL 1: ON"
+        
+        -- Start skill spam loop
+        spawn(function()
+            while enabled do
+                -- Press skill 1 key (Z)
+                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Z, false, game)
+                wait(0.05)
+                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Z, false, game)
+                wait(0.1)
+            end
+        end)
+    else
+        -- Change appearance when OFF
+        button.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        button.Text = "SKILL 1: OFF"
+    end
+end)
