@@ -1,48 +1,131 @@
--- Simple Blue Lock Rivals Mobile Skill 1 Spam Script
-local player = game:GetService("Players").LocalPlayer
-local enabled = false
-
--- Create a simple button
-local gui = Instance.new("ScreenGui")
-gui.Name = "SkillSpamGUI"
-gui.ResetOnSpawn = false
-gui.Parent = player.PlayerGui
-
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(0, 120, 0, 50)
-button.Position = UDim2.new(0.1, 0, 0.8, 0)
-button.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-button.Text = "SKILL 1: OFF"
-button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.Font = Enum.Font.SourceSansBold
-button.TextSize = 18
-button.BorderSizePixel = 2
-button.Parent = gui
-button.Draggable = true
-button.Active = true
-
--- Toggle function
-button.MouseButton1Click:Connect(function()
-    enabled = not enabled
-    
-    if enabled then
-        -- Change appearance when ON
-        button.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
-        button.Text = "SKILL 1: ON"
-        
-        -- Start skill spam loop
+-- Services
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+ 
+-- Initialize global variable if it doesn't exist
+if _G.EzToggle == nil then
+    _G.EzToggle = false
+end
+ 
+-- Create GUI
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+ 
+-- Check if the GUI already exists, destroy it if it does
+local existingGui = playerGui:FindFirstChild("ToggleGui")
+if existingGui then
+    existingGui:Destroy()
+end
+ 
+-- Create new GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ToggleGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+ 
+-- Create toggle button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = UDim2.new(0, 120, 0, 40)
+toggleButton.Position = UDim2.new(0.1, 0, 0.1, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleButton.BorderSizePixel = 2
+toggleButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+toggleButton.Text = "Auto C: OFF"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 16
+toggleButton.Parent = screenGui
+ 
+-- Function to update button appearance based on toggle state
+local function updateButtonAppearance()
+    if _G.EzToggle then
+        toggleButton.Text = "Auto C: ON"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    else
+        toggleButton.Text = "Auto C: OFF"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+    end
+end
+ 
+-- Update button appearance initially
+updateButtonAppearance()
+ 
+-- Set up the toggle functionality
+toggleButton.MouseButton1Click:Connect(function()
+    -- Toggle the state
+    _G.EzToggle = not _G.EzToggle
+ 
+    -- Update the button appearance
+    updateButtonAppearance()
+ 
+    -- Start or stop the key pressing loop
+    if _G.EzToggle then
+        -- Create a new thread for the loop
         spawn(function()
-            while enabled do
-                -- Press skill 1 key (C)
-                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.Z, false, game)
-                wait(0.05)
-                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.Z, false, game)
-                wait(0.1)
+            while _G.EzToggle do
+                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
+                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
+                wait() -- Wait one frame
             end
         end)
-    else
-        -- Change appearance when OFF
-        button.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        button.Text = "SKILL 1: OFF"
     end
 end)
+ 
+-- Make the button draggable
+local isDragging = false
+local dragInput = nil
+local dragStart = nil
+local startPos = nil
+ 
+local function update(input)
+    local delta = input.Position - dragStart
+    toggleButton.Position = UDim2.new(
+        startPos.X.Scale, 
+        startPos.X.Offset + delta.X, 
+        startPos.Y.Scale, 
+        startPos.Y.Offset + delta.Y
+    )
+end
+ 
+toggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        isDragging = true
+        dragStart = input.Position
+        startPos = toggleButton.Position
+ 
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                isDragging = false
+            end
+        end)
+    end
+end)
+ 
+toggleButton.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+ 
+screenGui.InputChanged:Connect(function(input)
+    if input == dragInput and isDragging then
+        update(input)
+    end
+end)
+ 
+-- Optional: Add a notification when the script loads
+local function notify(message)
+    local notification = Instance.new("TextLabel")
+    notification.Text = message
+    notification.Size = UDim2.new(0, 200, 0, 30)
+    notification.Position = UDim2.new(0.5, -100, 0.8, 0)
+    notification.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    notification.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notification.BorderSizePixel = 1
+    notification.Parent = screenGui
+ 
+    game:GetService("Debris"):AddItem(notification, 3) -- Remove after 3 seconds
+end
+ 
+notify("Auto C Toggle Loaded!")
